@@ -1,0 +1,14 @@
+{
+    "mqtt": {
+        "url": "tcp://192.168.0.1:1883",
+        "retain": true,
+        "topic": "garden/weather/storm",
+        "qos": 2
+    },
+    "storm": {
+        "windSpeed": 30,
+        "resetTimeSeconds": 1200,
+        "windTopic": "garden/weather/wind"
+    },
+    "loglevel": "trace"
+}

@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  stormmqtt:
+        environment:
+            TZ: "Europe/Berlin"
+        hostname: stormmqtt
+        image: pharndt/stormmqtt
+        volumes:
+            - ./config:/var/lib/storm-to-mqtt-gw:rw
+        restart: always
