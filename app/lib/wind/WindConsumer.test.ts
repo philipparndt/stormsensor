@@ -75,7 +75,11 @@ describe("WindConsumer", () => {
 
     test("no storm", () => {
         onData(Buffer.from(JSON.stringify({ wind: 14 })))
-        expect(messages.length).toBe(0)
+        expect(messages.length).toBe(1)
+        expect(messages[0].message).toBe(false)
+
+        onData(Buffer.from(JSON.stringify({ wind: 3 })))
+        expect(messages.length).toBe(1)
     })
 
     test("storm", () => {
