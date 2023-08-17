@@ -27,6 +27,7 @@ export const onData = (message: Buffer) => {
 }
 
 let timer: (ReturnType<typeof setTimeout> | undefined)
+let initialized = false
 
 const resetTimer = () => {
     const config = getAppConfig()
@@ -53,5 +54,11 @@ const consumeWind = (wind: WindType) => {
     if (wind.wind >= storm.windSpeed) {
         log.debug(`Wind speed ${wind.wind} exceeds threshold ${storm.windSpeed}, resetting timer`)
         resetTimer()
+    }
+    else if (!initialized) {
+        initialized = true
+        log.info(`Initialized with wind speed ${wind.wind}`)
+        const config = getAppConfig()
+        publishAbsolute(false, config.mqtt.topic)
     }
 }
