@@ -34,11 +34,11 @@ const resetTimer = () => {
     const duration = Duration.seconds(config.storm.resetTimeSeconds)
 
     if (!timer) {
-        log.info("Detected storm, starting timer", duration)
+        log.info("Detected storm, starting timer. Storm will be disabled in minutes (or later):", duration.minutes)
         publishAbsolute(true, config.mqtt.topic)
     }
-
-    if (timer) {
+    else {
+        log.debug("Still storm, resetting timer")
         clearTimeout(timer)
     }
 
