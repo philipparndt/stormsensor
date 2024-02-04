@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: philipparndt/get-release-number@v2
+      - uses: philipparndt/get-release-number@v3
         id: next
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
