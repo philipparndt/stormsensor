@@ -25,4 +25,4 @@ COPY --from=build-stage /edgeswitch-to-mqtt-gw /edgeswitch-to-mqtt-gw
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/edgeswitch-to-mqtt-gw", "/var/lib/edgeswitch-to-mqtt-gw/config.json"]
+ENTRYPOINT ["/edgeswitch-to-mqtt-gw", "/var/lib/storm-to-mqtt-gw/config.json"]
