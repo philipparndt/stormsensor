@@ -60,21 +60,13 @@ jobs:
             pharndt/stormmqtt:latest
             pharndt/stormmqtt:${{env.RELEASE_VERSION}}
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_VERSION: ${{ steps.next.outputs.version }}
+      - uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{env.RELEASE_VERSION}}
-          release_name: ${{env.RELEASE_VERSION}}
+          name: ${{ steps.next.outputs.version }}
+          tag: ${{ steps.next.outputs.version }}
           body: |
-            Docker tag: `pharndt/stormmqtt:${{env.RELEASE_VERSION}}`
+            Docker tag: `pharndt/stormmqtt: ${{ steps.next.outputs.version }}`
 
             Changes in this Release
               - Dependency update
               - ...
-
-          draft: false
-          prerelease: false
