@@ -65,7 +65,7 @@ jobs:
           name: ${{ steps.next.outputs.version }}
           tag: ${{ steps.next.outputs.version }}
           body: |
-            Docker tag: `pharndt/stormmqtt: ${{ steps.next.outputs.version }}`
+            Docker tag: `pharndt/stormmqtt:${{ steps.next.outputs.version }}`
 
             Changes in this Release
               - Dependency update
