@@ -16,6 +16,8 @@ github.com/philipparndt/mqtt-gateway v1.2.1 h1:vVSkZSPn3iUnRLE06y7pqK46CbQLW/J6d
 github.com/philipparndt/mqtt-gateway v1.2.1/go.mod h1:orCWDqZuyRus3Sp/bHnuw5Bt05GbrNfXMQGO0f5d1Kc=
 github.com/philipparndt/mqtt-gateway v1.6.0 h1:f+gU+5ZAmFWn+laEcXKfGv1oa6xkb7MV7DNDU5/mwr8=
 github.com/philipparndt/mqtt-gateway v1.6.0/go.mod h1:HCJFPtKU79ISlepAVNPoibk4OIs8PqWoamHZp/40mcs=
+github.com/philipparndt/mqtt-gateway v1.8.0 h1:iiEam5LnbjyhpZYtPjVmcTgJcWgT9SESNHQjGo/3OoY=
+github.com/philipparndt/mqtt-gateway v1.8.0/go.mod h1:HCJFPtKU79ISlepAVNPoibk4OIs8PqWoamHZp/40mcs=
 golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=
 golang.org/x/net v0.17.0/go.mod h1:NxSsAGuq816PNPmqtQdLE42eU2Fs7NoRIZrHJAlaCOE=
 golang.org/x/net v0.53.0 h1:d+qAbo5L0orcWAr0a9JweQpjXF19LMXJE8Ey7hwOdUA=
