@@ -1,6 +1,9 @@
 name: Build release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       releaseType:
@@ -11,34 +14,43 @@ on:
           - patch
           - minor
           - major
+      releaseNotes:
+        description: Custom release notes (optional)
+        required: false
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  goreleaser:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: philipparndt/get-release-number@v3
         id: next
+        if: github.event_name == 'workflow_dispatch'
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           releaseType: ${{ github.event.inputs.releaseType }}
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.19.4'
-
-      - name: Build
-        working-directory: app
+      - name: Create tag if workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
         run: |
-          go build .
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a v${{ steps.next.outputs.version }} -m "Release v${{ steps.next.outputs.version }}"
+          git push origin v${{ steps.next.outputs.version }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          check-latest: true
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -46,27 +58,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build docker container and push
-        id: docker_build
-        uses: docker/build-push-action@v5
+      - name: Generate Changelog
+        id: changelog
+        if: github.event.inputs.releaseNotes != ''
+        run: |
+          echo "${{ github.event.inputs.releaseNotes }}" > ./app/RELEASE_NOTES.md
+          echo "CUSTOM_RELEASE_NOTES=true" >> $GITHUB_ENV
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: v2
+          args: release --clean ${{ env.CUSTOM_RELEASE_NOTES == 'true' && '--release-notes=./RELEASE_NOTES.md' || '' }}
+          workdir: ./app
         env:
-          RELEASE_VERSION: ${{ steps.next.outputs.version }}
-        with:
-          context: ./app
-          file: ./app/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            pharndt/stormmqtt:latest
-            pharndt/stormmqtt:${{env.RELEASE_VERSION}}
-
-      - uses: ncipollo/release-action@v1
-        with:
-          name: ${{ steps.next.outputs.version }}
-          tag: ${{ steps.next.outputs.version }}
-          body: |
-            Docker tag: `pharndt/stormmqtt:${{ steps.next.outputs.version }}`
-
-            Changes in this Release
-              - Dependency update
-              - ...
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}

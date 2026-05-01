@@ -3,16 +3,32 @@ package wind
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/philipparndt/go-logger"
 	"github.com/philipparndt/mqtt-gateway/mqtt"
 	"github.com/philipparndt/stormsensor/config"
-	"log"
-	"time"
 )
 
 var timer *time.Timer
 var initialized bool
 var cfg config.Config
+var lastWind float64
+var stormActive bool
+
+type Status struct {
+	Wind        float64 `json:"wind"`
+	StormActive bool    `json:"stormActive"`
+	Initialized bool    `json:"initialized"`
+}
+
+func GetStatus() Status {
+	return Status{
+		Wind:        lastWind,
+		StormActive: stormActive,
+		Initialized: initialized,
+	}
+}
 
 type MessageType struct {
 	Wind float64 `json:"wind"`
@@ -24,14 +40,15 @@ func Start(config config.Config) {
 }
 
 func onMessage(_ string, bytes []byte) {
-	logger.Debug("Received wind data:", string(bytes))
+	logger.Debug("Received wind data", "data", string(bytes))
 	var wind MessageType
 	var err = json.Unmarshal(bytes, &wind)
 	if err != nil {
-		logger.Error("Error unmarshalling wind data:", err, string(bytes))
+		logger.Error("Error unmarshalling wind data", "error", err, "data", string(bytes))
 		return
 	}
 
+	lastWind = wind.Wind
 	consumeWind(wind)
 }
 
@@ -47,9 +64,9 @@ func resetTimer() {
 	duration := time.Duration(cfg.Storm.ResetTimeSeconds) * time.Second
 
 	if timer == nil {
-		logger.Info(
-			fmt.Sprintf("Detected storm, starting timer. Storm will be disabled in minutes (or later): %s",
-				formatDuration(duration)))
+		logger.Info("Detected storm, starting timer",
+			"resetIn", formatDuration(duration))
+		stormActive = true
 		mqtt.PublishAbsolute(cfg.MQTT.Topic, "true", false)
 	} else {
 		logger.Info("Still storm, resetting timer")
@@ -58,6 +75,7 @@ func resetTimer() {
 
 	timer = time.AfterFunc(duration, func() {
 		logger.Info("Timer expired, disable storm mode")
+		stormActive = false
 		mqtt.PublishAbsolute(cfg.MQTT.Topic, "false", false)
 		timer = nil
 	})
@@ -67,23 +85,20 @@ func consumeWind(wind MessageType) {
 	windSpeed := cfg.Storm.WindSpeed
 
 	if wind.Wind >= windSpeed {
-		logger.Info(
-			fmt.Sprintf("Wind speed %d exceeds threshold %d, resetting timer",
-				int(wind.Wind), int(windSpeed)))
+		logger.Info("Wind speed exceeds threshold, resetting timer",
+			"wind", int(wind.Wind), "threshold", int(windSpeed))
 
 		resetTimer()
 	} else if !initialized {
 		initialized = true
-		log.Printf("Initialized with wind speed %v\n", wind)
 
-		logger.Info(
-			fmt.Sprintf("Initialized with wind speed %d",
-				int(wind.Wind)))
+		logger.Info("Initialized with wind speed",
+			"wind", int(wind.Wind))
 
 		mqtt.PublishAbsolute(cfg.MQTT.Topic, "false", false)
 	}
 
-	logger.Debug(fmt.Sprintf("Consumed wind data: %f", wind.Wind))
+	logger.Debug("Consumed wind data", "wind", wind.Wind)
 }
 
 func run() {

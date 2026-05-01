@@ -14,18 +14,16 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.19.4'
+          go-version: '1.25'
 
       - name: Build
         working-directory: app
         run: |
           go build .
 
-      - name: Build docker container and push
+      - name: Build docker container
         id: docker_build
-        uses: docker/build-push-action@v5
-        env:
-          RELEASE_VERSION: ${{ steps.next.outputs.version }}
+        uses: docker/build-push-action@v6
         with:
           context: ./app
           file: ./app/Dockerfile
