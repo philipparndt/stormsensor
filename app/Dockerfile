@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.17
+# syntax=docker/dockerfile:1.27
 
 # Build the application from source
 FROM golang:1.26-alpine AS build-stage
